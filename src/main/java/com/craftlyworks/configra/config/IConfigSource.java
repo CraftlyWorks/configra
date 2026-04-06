@@ -1,4 +1,4 @@
-package com.craftlyworks.mininggame.helper.config;
+package com.craftlyworks.configra.config;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

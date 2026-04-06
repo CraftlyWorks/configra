@@ -1,6 +1,6 @@
-package com.craftlyworks.mininggame.helper.mongo;
+package com.craftlyworks.configra.mongo;
 
-import com.craftlyworks.mininggame.helper.config.IConfigSource;
+import com.craftlyworks.configra.config.IConfigSource;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -26,9 +26,7 @@ public class Mongo {
     }
 
     public void load(@NotNull IConfigSource configSource) {
-        //---- Validation ----//
         Objects.requireNonNull(configSource, "configSource cannot be null");
-        //---- Initialize the mongo ----//
         if (mongoClient != null) {
             throw new IllegalStateException("Mongo has already been initialized.");
         }
@@ -58,7 +56,10 @@ public class Mongo {
     }
 
     public @Nullable MongoDatabase getDatabase() {
-        //---- Getting database ----//
+        return this.getDatabase(this.databaseName);
+    }
+
+    public @Nullable MongoDatabase getDatabase(String databaseName) {
         if (useFallback) {
             return null;
         }
@@ -69,7 +70,6 @@ public class Mongo {
     }
 
     public void unload() {
-        //---- Unloading the mongo ----//
         if (mongoClient != null) {
             mongoClient.close();
         }

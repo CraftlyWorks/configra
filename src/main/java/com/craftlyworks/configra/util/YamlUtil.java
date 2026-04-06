@@ -1,6 +1,6 @@
-package com.craftlyworks.mininggame.helper.util;
+package com.craftlyworks.configra.util;
 
-import com.craftlyworks.mininggame.helper.config.YamlConfigSource;
+import com.craftlyworks.configra.config.YamlConfigSource;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,9 +22,7 @@ public class YamlUtil {
      * @throws IOException If the file could not be created or read.
      */
     public static @NotNull YamlConfigSource load(@NotNull File file) throws IOException {
-        //---- Validation ----//
         Objects.requireNonNull(file, "file cannot be null");
-        //---- Loading yaml ----//
         if (!file.exists()) {
             if (file.getParentFile() != null && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {
@@ -51,10 +49,8 @@ public class YamlUtil {
      * @throws IOException If the file could not be created or read.
      */
     public static @NotNull YamlConfigSource load(@NotNull File folder, @NotNull String fileName) throws IOException {
-        //---- Validation ----//
         Objects.requireNonNull(folder, "folder cannot be null");
         Objects.requireNonNull(fileName, "fileName cannot be null");
-        //---- Construct and load ----//
         return load(new File(folder, fileName));
     }
 }

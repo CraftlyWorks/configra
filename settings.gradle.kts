@@ -1,1 +1,1 @@
-rootProject.name = "mininghelper"
+rootProject.name = "configra"

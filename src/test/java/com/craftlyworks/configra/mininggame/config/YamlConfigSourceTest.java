@@ -1,5 +1,6 @@
-package com.craftlyworks.mininggame.helper.config;
+package com.craftlyworks.configra.mininggame.config;
 
+import com.craftlyworks.configra.config.YamlConfigSource;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -10,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class YamlConfigSourceTest {
     @Test
     public void testNestedKeys() {
-        //---- Prepare data ----//
         Map<String, Object> data = Map.of(
             "redis", Map.of(
                 "host", "localhost",
@@ -21,10 +21,8 @@ public class YamlConfigSourceTest {
             )
         );
 
-        //---- Test source ----//
         YamlConfigSource source = new YamlConfigSource(data);
 
-        //---- Assertions ----//
         assertEquals("localhost", source.get("redis.host"));
         assertEquals(6379, source.get("redis.port"));
         assertEquals("mongodb://localhost:27017", source.get("mongo.uri"));

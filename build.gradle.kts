@@ -2,9 +2,10 @@ plugins {
     id("java")
     id("com.gradleup.shadow") version "9.4.1"
     id("io.freefair.lombok") version "9.2.0"
+    id("maven-publish")
 }
 
-group = "com.craftlyworks.mininggame.helper"
+group = "com.craftlyworks.configra"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -44,5 +45,34 @@ tasks {
 
     build {
         dependsOn(shadowJar)
+    }
+}
+
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifactId = "configra"
+        }
+    }
+    repositories {
+        mavenLocal()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/CraftlyWorks/configra")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: "CraftlyWorks"
+                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("GITHUB_PAT")
+            }
+        }
     }
 }

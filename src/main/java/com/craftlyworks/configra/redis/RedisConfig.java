@@ -1,9 +1,9 @@
-package com.craftlyworks.mininggame.helper.redis;
+package com.craftlyworks.configra.redis;
 
-import com.craftlyworks.mininggame.helper.config.ConfigKey;
-import com.craftlyworks.mininggame.helper.config.ConfigRegistry;
-import com.craftlyworks.mininggame.helper.config.IConfigSource;
-import com.craftlyworks.mininggame.helper.util.YamlUtil;
+import com.craftlyworks.configra.config.ConfigKey;
+import com.craftlyworks.configra.config.ConfigRegistry;
+import com.craftlyworks.configra.config.IConfigSource;
+import com.craftlyworks.configra.util.YamlUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -24,9 +24,7 @@ public class RedisConfig {
      * @throws IOException If the file could not be read.
      */
     public static void load(@NotNull File file) throws IOException {
-        //---- Validation ----//
         Objects.requireNonNull(file, "file cannot be null");
-        //---- Loading config from file ----//
         Redis.INSTANCE.load(YamlUtil.load(file));
     }
 
@@ -36,9 +34,7 @@ public class RedisConfig {
      * @param source The config source.
      */
     public static void load(@NotNull IConfigSource source) {
-        //---- Validation ----//
         Objects.requireNonNull(source, "source cannot be null");
-        //---- Loading config from source ----//
         Redis.INSTANCE.load(source);
     }
 }

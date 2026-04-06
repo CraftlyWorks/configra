@@ -1,9 +1,9 @@
-package com.craftlyworks.mininggame.helper.mongo;
+package com.craftlyworks.configra.mongo;
 
-import com.craftlyworks.mininggame.helper.config.ConfigKey;
-import com.craftlyworks.mininggame.helper.config.ConfigRegistry;
-import com.craftlyworks.mininggame.helper.config.IConfigSource;
-import com.craftlyworks.mininggame.helper.util.YamlUtil;
+import com.craftlyworks.configra.config.ConfigKey;
+import com.craftlyworks.configra.config.ConfigRegistry;
+import com.craftlyworks.configra.config.IConfigSource;
+import com.craftlyworks.configra.util.YamlUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -23,9 +23,7 @@ public class MongoConfig {
      * @throws IOException If the file could not be read.
      */
     public static void load(@NotNull File file) throws IOException {
-        //---- Validation ----//
         Objects.requireNonNull(file, "file cannot be null");
-        //---- Loading config from file ----//
         Mongo.INSTANCE.load(YamlUtil.load(file));
     }
 
@@ -35,9 +33,7 @@ public class MongoConfig {
      * @param source The config source.
      */
     public static void load(@NotNull IConfigSource source) {
-        //---- Validation ----//
         Objects.requireNonNull(source, "source cannot be null");
-        //---- Loading config from source ----//
         Mongo.INSTANCE.load(source);
     }
 }

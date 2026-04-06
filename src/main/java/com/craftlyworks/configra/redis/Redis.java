@@ -1,9 +1,10 @@
-package com.craftlyworks.mininggame.helper.redis;
+package com.craftlyworks.configra.redis;
 
-import com.craftlyworks.mininggame.helper.config.IConfigSource;
+import com.craftlyworks.configra.config.IConfigSource;
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.ScoredValue;
+import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
@@ -32,13 +33,10 @@ public class Redis {
     private boolean useFallback = false;
 
     private Redis() {
-
     }
 
     public void load(@NotNull IConfigSource configSource) {
-        //---- Validation ----//
         Objects.requireNonNull(configSource, "configSource cannot be null");
-        //---- Loading config ----//
         RedisConfig.CONFIG.validate(configSource);
 
         this.prefix = RedisConfig.CONFIG.get(configSource, RedisConfig.PREFIX);
@@ -103,7 +101,6 @@ public class Redis {
     }
 
     public void unload() {
-        //---- Unloading redis ----//
         if (pubSubConnection != null) {
             pubSubConnection.close();
         }
@@ -116,33 +113,25 @@ public class Redis {
     }
 
     public @NotNull String wrap(@NotNull String key) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
-        //---- Wrapping the key ----//
         return prefix + key;
     }
 
     public void subscribe(@NotNull String channel, @NotNull BiConsumer<String, String> listener) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(listener, "listener cannot be null");
-        //---- Subscribe ----//
         this.subscribe(channel, false, listener);
     }
 
     public void subscribeGlobal(@NotNull String channel, @NotNull BiConsumer<String, String> listener) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(listener, "listener cannot be null");
-        //---- Subscribe global ----//
         this.subscribe(channel, true, listener);
     }
 
     private void subscribe(@NotNull String channel, boolean global, @NotNull BiConsumer<String, String> listener) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(listener, "listener cannot be null");
-        //---- Subscribing ----//
         String wrappedChannel = global ? channel : wrap(channel);
         listeners.computeIfAbsent(wrappedChannel, k -> {
             if (!useFallback && pubSubConnection != null) {
@@ -153,26 +142,20 @@ public class Redis {
     }
 
     public void publish(@NotNull String channel, @NotNull String message) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(message, "message cannot be null");
-        //---- Publish ----//
         this.publish(channel, false, message);
     }
 
     public void publishGlobal(@NotNull String channel, @NotNull String message) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(message, "message cannot be null");
-        //---- Publish global ----//
         this.publish(channel, true, message);
     }
 
     private void publish(@NotNull String channel, boolean global, @NotNull String message) {
-        //---- Validation ----//
         Objects.requireNonNull(channel, "channel cannot be null");
         Objects.requireNonNull(message, "message cannot be null");
-        //---- Publishing ----//
         String wrappedChannel = global ? channel : wrap(channel);
         if (useFallback) {
             List<BiConsumer<String, String>> channelListeners = listeners.get(wrappedChannel);
@@ -189,7 +172,6 @@ public class Redis {
     }
 
     public void ping() {
-        //---- Ping ----//
         if (useFallback) return;
         if (commands == null) return;
         String pong = commands.ping();
@@ -200,10 +182,8 @@ public class Redis {
 
     // Set and get ZSET (leaderboards)
     public void zaddOne(@NotNull String key, long score, @NotNull String member) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(member, "member cannot be null");
-        //---- Zadd one ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             zsets.computeIfAbsent(wrappedKey, k -> new HashMap<>()).put(member, (double) score);
@@ -215,10 +195,8 @@ public class Redis {
     }
 
     public <V extends Number> void zaddMany(@NotNull String key, @NotNull Map<String, V> scoreMembers) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(scoreMembers, "scoreMembers cannot be null");
-        //---- Zadd many ----//
         if (scoreMembers.isEmpty()) {
             return;
         }
@@ -240,10 +218,8 @@ public class Redis {
     }
 
     public void zremOne(@NotNull String key, @NotNull String member) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(member, "member cannot be null");
-        //---- Zrem one ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Map<String, Double> zset = zsets.get(wrappedKey);
@@ -258,9 +234,7 @@ public class Redis {
     }
 
     public @NotNull List<String> zrangeAll(@NotNull String key) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
-        //---- Zrange all ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Map<String, Double> zset = zsets.get(wrappedKey);
@@ -278,11 +252,9 @@ public class Redis {
 
     // Hash helpers for storing formatted strings (e.g., uuid -> formatted line)
     public void hset(@NotNull String key, @NotNull String field, @NotNull String value) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(field, "field cannot be null");
         Objects.requireNonNull(value, "value cannot be null");
-        //---- Hset ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             hashes.computeIfAbsent(wrappedKey, k -> new HashMap<>()).put(field, value);
@@ -294,10 +266,8 @@ public class Redis {
     }
 
     public void hsetMany(@NotNull String key, @NotNull Map<String, String> fieldValues) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(fieldValues, "fieldValues cannot be null");
-        //---- Hset many ----//
         if (fieldValues.isEmpty()) {
             return;
         }
@@ -312,10 +282,8 @@ public class Redis {
     }
 
     public @NotNull Map<String, String> hmget(@NotNull String key, @NotNull List<String> fields) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(fields, "fields cannot be null");
-        //---- Hmget ----//
         if (fields.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -347,10 +315,8 @@ public class Redis {
     }
 
     public @Nullable String hget(@NotNull String key, @NotNull String field) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(field, "field cannot be null");
-        //---- Hget ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Map<String, String> hash = hashes.get(wrappedKey);
@@ -363,9 +329,7 @@ public class Redis {
     }
 
     public void del(@NotNull String key) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
-        //---- Del ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             zsets.remove(wrappedKey);
@@ -380,10 +344,8 @@ public class Redis {
 
     // Set operations
     public void sadd(@NotNull String key, @NotNull String... members) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(members, "members cannot be null");
-        //---- Sadd ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Collections.addAll(sets.computeIfAbsent(wrappedKey, k -> new HashSet<>()), members);
@@ -395,10 +357,8 @@ public class Redis {
     }
 
     public void srem(@NotNull String key, @NotNull String... members) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(members, "members cannot be null");
-        //---- Srem ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Set<String> set = sets.get(wrappedKey);
@@ -415,9 +375,7 @@ public class Redis {
     }
 
     public @NotNull Set<String> smembers(@NotNull String key) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
-        //---- Smembers ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             Set<String> set = sets.get(wrappedKey);
@@ -430,10 +388,8 @@ public class Redis {
     }
 
     public @Nullable String setNx(@NotNull String key, @NotNull String value, long expiryMillis) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(value, "value cannot be null");
-        //---- Setnx ----//
         String wrappedKey = wrap(key);
         if (useFallback) {
             // Very basic fallback, doesn't handle NX/PX properly but good enough for local
@@ -441,7 +397,7 @@ public class Redis {
             return "OK";
         }
         if (commands != null) {
-            return commands.set(wrappedKey, value, io.lettuce.core.SetArgs.Builder.nx().px(expiryMillis));
+            return commands.set(wrappedKey, value, SetArgs.Builder.nx().px(expiryMillis));
         }
         return null;
     }

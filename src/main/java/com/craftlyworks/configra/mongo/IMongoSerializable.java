@@ -1,4 +1,4 @@
-package com.craftlyworks.mininggame.helper.mongo;
+package com.craftlyworks.configra.mongo;
 
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;

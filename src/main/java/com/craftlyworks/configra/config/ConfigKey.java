@@ -1,4 +1,4 @@
-package com.craftlyworks.mininggame.helper.config;
+package com.craftlyworks.configra.config;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -14,10 +14,8 @@ public class ConfigKey<T> {
     private final @NotNull Class<T> type;
 
     private ConfigKey(@NotNull String key, @Nullable T defaultValue, boolean required, @NotNull Class<T> type) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(type, "type cannot be null");
-        //---- Set the values ----//
         this.key = key;
         this.defaultValue = defaultValue;
         this.required = required;
@@ -25,24 +23,19 @@ public class ConfigKey<T> {
     }
 
     public static <T> @NotNull ConfigKey<T> of(@NotNull String key, @NotNull Class<T> type) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(type, "type cannot be null");
-        //---- Construct the key ----//
         return new ConfigKey<>(key, null, true, type);
     }
 
     public static <T> @NotNull ConfigKey<T> of(@NotNull String key, @NotNull T defaultValue, @NotNull Class<T> type) {
-        //---- Validation ----//
         Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(defaultValue, "defaultValue cannot be null");
         Objects.requireNonNull(type, "type cannot be null");
-        //---- Construct the key ----//
         return new ConfigKey<>(key, defaultValue, false, type);
     }
 
     public @Nullable T cast(@Nullable Object value) {
-        //---- Cast the value ----//
         if (value == null) return null;
         if (type.isInstance(value)) {
             return type.cast(value);

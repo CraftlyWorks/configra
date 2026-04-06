@@ -1,8 +1,6 @@
-# Mining Helper Library
+# Configra
 
-A simple collection of Java utilities for managing configurations, MongoDB connections, and Redis operations. Part of
-the `mininggame` ecosystem, this project is designed as a universal utility for both Minecraft and Discord applications,
-avoiding any platform-specific code to remain reusable across any Java project.
+A simple collection of Java utilities for managing configurations, MongoDB connections, and Redis operations.
 
 ## Table of Contents
 
@@ -104,7 +102,8 @@ The resulting JAR files (including the shadow/fat JAR) will be located in `build
 
 ## Contributing
 
-Contributions are welcome! If you have any improvements, bug fixes, or new features to suggest, feel free to open a Pull Request. We appreciate any help in making this project better.
+Contributions are welcome! If you have any improvements, bug fixes, or new features to suggest, feel free to open a Pull
+Request. We appreciate any help in making this project better.
 
 ## Coding Style
 
@@ -114,14 +113,3 @@ This project follows a strict coding style for robustness and clarity:
   JetBrains annotations.
 - **Validation**: All `@NotNull` parameters are validated using `Objects.requireNonNull(param, "message")` at the
   beginning of the method.
-- **Comments**: Logic is separated by standardized comment blocks like `//---- Validation ----//`,
-  `//---- Construct and register ----//`, etc.
-
-```java
-public void register(@NotNull ConfigKey<?> key) {
-    //---- Validation ----//
-    Objects.requireNonNull(key, "key cannot be null");
-    //---- Register the key ----//
-    keys.add(key);
-}
-```
