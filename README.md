@@ -105,10 +105,17 @@ The resulting JAR files (including the shadow/fat JAR) will be located in `build
 Contributions are welcome! If you have any improvements, bug fixes, or new features to suggest, feel free to open a Pull
 Request. We appreciate any help in making this project better.
 
+Before submitting a Pull Request, please ensure that:
+1. Your code follows the [Coding Style](#coding-style).
+2. All tests pass: `./gradlew test`.
+3. Checkstyle passes: `./gradlew checkstyleMain`.
+
 ## Coding Style
 
 This project follows a strict coding style for robustness and clarity:
 
+- **Checkstyle**: The project uses Checkstyle to enforce consistent code formatting. You can run the check locally
+  using `./gradlew checkstyleMain`. The configuration can be found in `config/checkstyle/checkstyle.xml`.
 - **Annotations**: Every method parameter, return type, and field is annotated with `@NotNull` or `@Nullable` from
   JetBrains annotations.
 - **Validation**: All `@NotNull` parameters are validated using `Objects.requireNonNull(param, "message")` at the
