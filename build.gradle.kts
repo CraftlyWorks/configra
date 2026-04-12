@@ -5,7 +5,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.craftlyworks.configra"
+group = "com.craftlyworks"
 version = "1.0-SNAPSHOT"
 
 repositories {
