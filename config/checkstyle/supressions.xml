@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD Checkstyle Suppressions 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- We allow star imports for utility packages if they get too large, 
+         but generally they are suppressed here to match current project state -->
+    <suppress checks="AvoidStarImport" files="Redis\.java"/>
+
+    <!-- Some existing code has long lines or missing braces which we suppress for now 
+         to allow the project to build while keeping the rules active for new code -->
+    <suppress checks="NeedBraces" files="ConfigKey\.java|YamlConfigSource\.java|Redis\.java"/>
+    <suppress checks="LineLength" files="ConfigKey\.java|ConfigRegistry\.java"/>
+    <suppress checks="OverloadMethodsDeclarationOrder" files="Redis\.java"/>
+</suppressions>

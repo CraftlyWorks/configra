@@ -1,8 +1,17 @@
 plugins {
     id("java")
+    id("checkstyle")
     id("com.gradleup.shadow") version "9.4.1"
     id("io.freefair.lombok") version "9.2.0"
     id("maven-publish")
+}
+
+checkstyle {
+    toolVersion = "10.12.5"
+    configFile = file("config/checkstyle/checkstyle.xml")
+    configProperties = mapOf("configDirectory" to file("config/checkstyle"))
+    isIgnoreFailures = false
+    maxWarnings = 0
 }
 
 group = "com.craftlyworks"
