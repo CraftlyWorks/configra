@@ -78,6 +78,10 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/CraftlyWorks/configra")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: "CraftlyWorks"
+                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("GITHUB_PAT")
+            }
         }
     }
 }
