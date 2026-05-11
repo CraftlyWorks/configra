@@ -4,12 +4,40 @@ A simple collection of Java utilities for managing configurations, MongoDB conne
 
 ## Table of Contents
 
+- [Installation](#installation)
 - [Configuration Management](#configuration-management)
 - [MongoDB Integration](#mongodb-integration)
 - [Redis Integration](#redis-integration)
 - [Building the Project](#building-the-project)
 - [Contributing](#contributing)
 - [Coding Style](#coding-style)
+
+## Installation
+
+Add Configra as a dependency from Maven Central using your preferred build tool.
+
+**Gradle (Kotlin DSL)**
+```kotlin
+dependencies {
+    implementation("com.craftlyworks:configra:1.0-RELEASE")
+}
+```
+
+**Gradle (Groovy DSL)**
+```groovy
+dependencies {
+    implementation 'com.craftlyworks:configra:1.0-RELEASE'
+}
+```
+
+**Maven**
+```xml
+<dependency>
+    <groupId>com.craftlyworks</groupId>
+    <artifactId>configra</artifactId>
+    <version>1.0-RELEASE</version>
+</dependency>
+```
 
 ## Configuration Management
 
