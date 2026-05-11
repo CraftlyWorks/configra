@@ -4,6 +4,9 @@ plugins {
     id("com.gradleup.shadow") version "9.4.1"
     id("io.freefair.lombok") version "9.2.0"
     id("maven-publish")
+    id("com.gradleup.nmcp")
+    id("java-library")
+    id("signing")
 }
 
 checkstyle {
@@ -66,22 +69,56 @@ java {
     withJavadocJar()
 }
 
-publishing {
+configure<PublishingExtension> {
     publications {
-        create<MavenPublication>("mavenJava") {
+        create<MavenPublication>("maven") {
             from(components["java"])
-            artifactId = "configra"
-        }
-    }
-    repositories {
-        mavenLocal()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/CraftlyWorks/configra")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR") ?: "CraftlyWorks"
-                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("GITHUB_PAT")
+
+            pom {
+                name.set(project.name)
+                description.set("configra - A simple collection of Java utilities for managing configurations, MongoDB connections, and Redis operations.")
+                url.set("https://github.com/CraftlyWorks/configra")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("CraftlyWorks")
+                        name.set("CraftlyWorks")
+                        email.set("contact@craftlyworks.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/CraftlyWorks/configra.git")
+                    developerConnection.set("scm:git:ssh://github.com/CraftlyWorks/configra.git")
+                    url.set("https://github.com/CraftlyWorks/configra")
+                }
             }
         }
+    }
+}
+
+signing {
+    val signingKey = System.getenv("GPG_SIGNING_KEY")
+    val signingPassword = System.getenv("GPG_SIGNING_PASSWORD")
+
+    if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
+    } else {
+        logger.warn("GPG key or password not set! Artifacts will not be signed.")
+    }
+}
+
+nmcp {
+    publishAllPublicationsToCentralPortal {
+        username.set(findProperty("centralUsername") as String)
+        password.set(findProperty("centralPassword") as String)
     }
 }

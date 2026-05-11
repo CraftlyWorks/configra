@@ -1,1 +1,4 @@
+plugins {
+    id("com.gradleup.nmcp.settings").version("1.4.3")
+}
 rootProject.name = "configra"
