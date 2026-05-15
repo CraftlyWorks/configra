@@ -18,7 +18,7 @@ checkstyle {
 }
 
 group = "com.craftlyworks"
-version = "1.0-RELEASE"
+version = "1.1-RELEASE"
 
 repositories {
     mavenCentral()

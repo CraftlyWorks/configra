@@ -19,14 +19,14 @@ Add Configra as a dependency from Maven Central using your preferred build tool.
 **Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
-    implementation("com.craftlyworks:configra:1.0-RELEASE")
+    implementation("com.craftlyworks:configra:1.1-RELEASE")
 }
 ```
 
 **Gradle (Groovy DSL)**
 ```groovy
 dependencies {
-    implementation 'com.craftlyworks:configra:1.0-RELEASE'
+    implementation 'com.craftlyworks:configra:1.1-RELEASE'
 }
 ```
 
@@ -35,7 +35,7 @@ dependencies {
 <dependency>
     <groupId>com.craftlyworks</groupId>
     <artifactId>configra</artifactId>
-    <version>1.0-RELEASE</version>
+    <version>1.1-RELEASE</version>
 </dependency>
 ```
 
