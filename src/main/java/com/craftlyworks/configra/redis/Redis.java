@@ -22,6 +22,7 @@ public class Redis {
     private final @NotNull Map<String, Map<String, Double>> zsets = new HashMap<>();
     private final @NotNull Map<String, Map<String, String>> hashes = new HashMap<>();
     private final @NotNull Map<String, Set<String>> sets = new HashMap<>();
+    private final @NotNull Map<String, String> strings = new HashMap<>();
     private @Nullable RedisClient client;
     private @Nullable StatefulRedisConnection<String, String> connection;
     @Getter
@@ -328,10 +329,36 @@ public class Redis {
         return null;
     }
 
+    public void set(@NotNull String key, @NotNull String value) {
+        Objects.requireNonNull(key, "key cannot be null");
+        Objects.requireNonNull(value, "value cannot be null");
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            strings.put(wrappedKey, value);
+            return;
+        }
+        if (commands != null) {
+            commands.set(wrappedKey, value);
+        }
+    }
+
+    public @Nullable String get(@NotNull String key) {
+        Objects.requireNonNull(key, "key cannot be null");
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            return strings.get(wrappedKey);
+        }
+        if (commands != null) {
+            return commands.get(wrappedKey);
+        }
+        return null;
+    }
+
     public void del(@NotNull String key) {
         Objects.requireNonNull(key, "key cannot be null");
         String wrappedKey = wrap(key);
         if (useFallback) {
+            strings.remove(wrappedKey);
             zsets.remove(wrappedKey);
             hashes.remove(wrappedKey);
             sets.remove(wrappedKey);
