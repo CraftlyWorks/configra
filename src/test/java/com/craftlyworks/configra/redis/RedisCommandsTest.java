@@ -56,8 +56,12 @@ class RedisCommandsTest {
         if (redis != null && ns != null) {
             redis.keys(ns + "*").forEach(redis::del);
         }
-        if (connection != null) connection.close();
-        if (client != null) client.shutdown();
+        if (connection != null) {
+            connection.close();
+        }
+        if (client != null) {
+            client.shutdown();
+        }
     }
 
     @Test
