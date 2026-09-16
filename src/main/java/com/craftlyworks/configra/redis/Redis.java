@@ -16,6 +16,21 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+/**
+ * The Redis connection, plus the handful of commands the services built on configra actually use.
+ *
+ * <p><b>Two modes.</b> Normally every call goes to a real server through lettuce. When the server
+ * cannot be reached and {@code local.environment} is on, it falls back to in-memory maps so a
+ * plugin still runs on a laptop with no infrastructure. The fallback is a convenience for
+ * development and is not a Redis: it is per-process, so nothing crosses between services, and
+ * <b>it has no clock, so {@link #expire} and {@link #hexpire} do nothing there and say so by
+ * returning false</b>. Anything whose correctness depends on a key expiring must not rely on the
+ * fallback.
+ *
+ * <p>Keys are namespaced through {@link #wrap} using the configured prefix, with the deliberate
+ * exception of {@link #publishGlobal} and {@link #subscribeGlobal} - channels shared with services
+ * that know nothing about this prefix have to be named literally on both sides.
+ */
 public class Redis {
     public static final @NotNull Redis INSTANCE = new Redis();
     private final @NotNull Map<String, List<BiConsumer<String, String>>> listeners = new HashMap<>();
@@ -327,6 +342,137 @@ public class Redis {
             return commands.hget(wrappedKey, field);
         }
         return null;
+    }
+
+    /**
+     * Removes fields from a hash.
+     *
+     * <p>The counterpart to {@link #hset}, which without this made a hash write-only: fields could
+     * be added and overwritten but never taken out, so anything modelling a changing set of things
+     * had to avoid hashes entirely or grow forever.
+     *
+     * @return how many fields were actually removed
+     */
+    public long hdel(@NotNull String key, @NotNull String... fields) {
+        Objects.requireNonNull(key, "key cannot be null");
+        Objects.requireNonNull(fields, "fields cannot be null");
+        if (fields.length == 0) {
+            return 0L;
+        }
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            Map<String, String> hash = hashes.get(wrappedKey);
+            if (hash == null) return 0L;
+            long removed = 0L;
+            for (String field : fields) {
+                if (hash.remove(field) != null) removed++;
+            }
+            return removed;
+        }
+        if (commands != null) {
+            Long removed = commands.hdel(wrappedKey, fields);
+            return removed == null ? 0L : removed;
+        }
+        return 0L;
+    }
+
+    /**
+     * Every field of a hash.
+     *
+     * <p>{@link #hmget} can only answer about fields the caller already knows the names of, which
+     * is no use when the hash <i>is</i> the list - a roster, a registry, anything whose membership
+     * is the question being asked.
+     *
+     * @return the hash, or an empty map if there is none
+     */
+    public @NotNull Map<String, String> hgetAll(@NotNull String key) {
+        Objects.requireNonNull(key, "key cannot be null");
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            Map<String, String> hash = hashes.get(wrappedKey);
+            return hash == null ? Collections.emptyMap() : new HashMap<>(hash);
+        }
+        if (commands != null) {
+            return commands.hgetall(wrappedKey);
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Gives a key a lifetime, after which Redis deletes it.
+     *
+     * <p>Until this there was exactly one way to store anything with an expiry - {@link #setNx},
+     * which only writes when the key is absent and so cannot refresh one. Anything needing a
+     * heartbeat had to carry its own timestamp and have every reader judge staleness for itself.
+     *
+     * @param seconds how long from now
+     * @return true if a lifetime was set; false if the key does not exist, and <b>false in the
+     *     in-memory fallback, which has no clock</b> - see the class notes on expiry there
+     */
+    public boolean expire(@NotNull String key, long seconds) {
+        Objects.requireNonNull(key, "key cannot be null");
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            return false;
+        }
+        if (commands != null) {
+            Boolean set = commands.expire(wrappedKey, seconds);
+            return Boolean.TRUE.equals(set);
+        }
+        return false;
+    }
+
+    /**
+     * Gives individual hash fields a lifetime, so that entries in one hash expire separately.
+     *
+     * <p>This is what {@link #expire} cannot do: a key-level lifetime takes the whole hash at once,
+     * which is wrong whenever several writers share it - refreshing the key to keep your own
+     * entries alive also keeps everybody else's dead ones alive. Per-field expiry lets each writer
+     * be responsible for exactly its own.
+     *
+     * <p><b>Needs Redis 7.4 or newer.</b> Against an older server this fails rather than silently
+     * leaving the fields permanent, so a caller that depends on expiry finds out at once.
+     *
+     * @return true if the command was accepted for every field named
+     */
+    public boolean hexpire(@NotNull String key, long seconds, @NotNull String... fields) {
+        Objects.requireNonNull(key, "key cannot be null");
+        Objects.requireNonNull(fields, "fields cannot be null");
+        if (fields.length == 0) {
+            return false;
+        }
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            return false;
+        }
+        if (commands != null) {
+            // One status per field: 1 set, 0 not set, 2 deleted because the time had passed, and
+            // -2 for a field that is not there. Anything below 0 means nothing was applied.
+            List<Long> statuses = commands.hexpire(wrappedKey, seconds, fields);
+            if (statuses == null || statuses.size() != fields.length) return false;
+            for (Long status : statuses) {
+                if (status == null || status < 0L) return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /** Whether a key is there at all, without fetching what is in it. */
+    public boolean exists(@NotNull String key) {
+        Objects.requireNonNull(key, "key cannot be null");
+        String wrappedKey = wrap(key);
+        if (useFallback) {
+            return strings.containsKey(wrappedKey)
+                || hashes.containsKey(wrappedKey)
+                || sets.containsKey(wrappedKey)
+                || zsets.containsKey(wrappedKey);
+        }
+        if (commands != null) {
+            Long found = commands.exists(wrappedKey);
+            return found != null && found > 0L;
+        }
+        return false;
     }
 
     public void set(@NotNull String key, @NotNull String value) {
