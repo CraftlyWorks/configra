@@ -95,7 +95,7 @@ class RedisWrapperTest {
     }
 
     @Test
-    void aFieldGivenALifetimeIsGoneAfterItPasses() throws InterruptedException {
+    void fieldGivenALifetimeIsGoneAfterItPasses() throws InterruptedException {
         Redis.INSTANCE.hset("hash", "fleeting", "1");
         assertTrue(Redis.INSTANCE.hexpire("hash", 1, "fleeting"));
         assertNull(waitForRemoval("hash", "fleeting"), "the field should have expired");
@@ -104,7 +104,9 @@ class RedisWrapperTest {
     /** Polls rather than sleeping a fixed time, so a slow machine does not fail the run. */
     private static String waitForRemoval(String key, String field) throws InterruptedException {
         for (int i = 0; i < 40; i++) {
-            if (Redis.INSTANCE.hget(key, field) == null) return null;
+            if (Redis.INSTANCE.hget(key, field) == null) {
+                return null;
+            }
             Thread.sleep(100);
         }
         return Redis.INSTANCE.hget(key, field);
